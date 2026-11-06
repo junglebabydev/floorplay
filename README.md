@@ -27,6 +27,30 @@ You land on the furnished home in 2D and 3D. Drag, rotate or resize anything; ov
 
 You can also draw a plan entirely by hand with no AI at all.
 
+## Use it inside ChatGPT or Claude
+
+Floorplay is also an **MCP App**: add it as a connector and the chat model does the AI work with your own ChatGPT or Claude subscription, no API key needed. Share a floor plan (and photos of your furniture) in the chat, ask to see it in 3D, and an interactive, furnished 3D home appears in the conversation. You can rotate it, switch to the plan view, drag furniture, go full screen, or open it in the web app.
+
+Connector URL: `https://floorplay-mcp.<your-subdomain>.workers.dev/mcp` (see Hosting the MCP server below).
+
+- **Claude** (claude.ai or the desktop app): Settings → Connectors → Add custom connector, paste the URL. Custom connectors need a paid Claude plan.
+- **ChatGPT**: Settings → Apps & Connectors → Advanced settings → turn on Developer mode, then Create, paste the URL, no authentication. Which plans can add custom apps varies; check OpenAI's help pages.
+
+Then, in a chat: attach your floor plan and say "show this in 3D with Floorplay". Add furniture photos or a walkthrough video to furnish it.
+
+The server is stateless and read-only: it receives the traced plan from the chat model, computes the scale, walls and furniture layout, and returns them. It stores nothing.
+
+### Hosting the MCP server
+
+The server (`mcp/`) runs on Cloudflare Workers; the free plan is enough.
+
+1. Create a free Cloudflare account and open **Workers & Pages** once so it gives you a `workers.dev` subdomain.
+2. Create an API token with the **Edit Cloudflare Workers** template, and note your Account ID.
+3. In this repo on GitHub: Settings → Secrets and variables → Actions, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+4. Run the **Deploy MCP server** workflow (or push to `main`). It deploys to `https://floorplay-mcp.<your-subdomain>.workers.dev`.
+
+Locally: `pnpm mcp` runs it on Node at `http://localhost:3001/mcp`, `pnpm mcp:dev` in the Workers runtime, `pnpm mcp:smoke <url>` calls it like a chat host, and `pnpm mcp:host` opens a test chat that renders the 3D view.
+
 ## Bring your own AI
 
 Pick a provider in **Connect AI** and paste a key. Use a model that can read images.
@@ -41,7 +65,7 @@ Pick a provider in **Connect AI** and paste a key. Use a model that can read ima
 
 **Privacy.** Keys and projects are stored only in your browser (localStorage and IndexedDB). AI requests go directly from your browser to the provider you chose. Use **Forget keys** on a shared computer.
 
-**Why not a ChatGPT or Claude subscription?** Anthropic does not allow Claude Pro or Max subscriptions to be used in third-party apps, and OpenAI's Sign in with ChatGPT is limited to its partner programme. Both offer pay-as-you-go API keys, which work here. A Floorplay app that runs inside ChatGPT and Claude (an MCP App), using the user's subscription there, is on the roadmap.
+**Want to use your ChatGPT or Claude subscription instead of a key?** Use Floorplay inside ChatGPT or Claude (above). In the web app itself, subscriptions cannot be used: Anthropic does not allow Claude subscriptions in third-party apps, and OpenAI's Sign in with ChatGPT is limited to partner apps.
 
 ## Develop
 
@@ -65,13 +89,13 @@ The build is a static site with a relative base, so `dist/` can be hosted anywhe
 | `src/ai` | Provider clients, prompts, JSON schemas and validators for the three AI jobs: trace a plan, identify furniture, read a room's finish. |
 | `src/three` | Plan to three.js: walls with openings, doors, windows, procedural floor textures, parametric furniture, `.glb` export. |
 | `src/app` | The React app: store, 2D plan editor (SVG), 3D view (react-three-fiber), panels and settings. |
+| `mcp` | The MCP App for ChatGPT and Claude: server (`server.ts`, `home.ts`), the in-chat view (`widget/`), Worker and Node entries, a test host. |
 | `index.html` | The landing page. |
 
 `src/core`, `src/ai` and `src/three` are framework-free so they can be reused, for example in an MCP App.
 
 ## Roadmap
 
-- Floorplay as an MCP App for ChatGPT and Claude, so people can use their existing subscriptions.
 - Desktop builds (Tauri) for offline use with local models.
 - More furniture shapes, wall colours per room, multi-storey homes.
 - Share a read-only link to a furnished plan.

@@ -53,6 +53,7 @@ const AI_KEY = 'floorplay.ai.v1'
 
 function loadAI(): AISettings {
   try {
+    if (typeof window === 'undefined') return defaultAISettings()
     const raw = localStorage.getItem(AI_KEY)
     if (!raw) return defaultAISettings()
     const parsed = JSON.parse(raw) as AISettings
@@ -74,7 +75,7 @@ export const useStore = create<State>((setState, getState) => ({
   cutWalls: true,
   showLabels: true,
   showImage: true,
-  ai: typeof localStorage !== 'undefined' ? loadAI() : defaultAISettings(),
+  ai: loadAI(),
   settingsOpen: false,
   wizardOpen: false,
   toast: null,
@@ -114,7 +115,7 @@ export const useStore = create<State>((setState, getState) => ({
   setPanel: (panel) => setState({ panel }),
   toggle: (k) => setState({ [k]: !getState()[k] } as Partial<State>),
   setAI: (ai) => {
-    localStorage.setItem(AI_KEY, JSON.stringify(ai))
+    try { localStorage.setItem(AI_KEY, JSON.stringify(ai)) } catch { /* storage blocked (e.g. sandboxed frame) */ }
     setState({ ai })
   },
   openSettings: (settingsOpen) => setState({ settingsOpen }),
@@ -122,7 +123,9 @@ export const useStore = create<State>((setState, getState) => ({
     setState({ toast: { text, tone } })
     setTimeout(() => { if (getState().toast?.text === text) setState({ toast: null }) }, tone === 'error' ? 8000 : 4000)
   },
-  loadRecent: async () => setState({ recent: ((await get('projects')) as ProjectMeta[] | undefined) ?? [] }),
+  loadRecent: async () => {
+    try { setState({ recent: ((await get('projects')) as ProjectMeta[] | undefined) ?? [] }) } catch { /* no IndexedDB here */ }
+  },
   openRecent: async (id) => {
     const p = (await get(`project:${id}`)) as Project | undefined
     if (p) getState().setProject(p)
@@ -137,17 +140,22 @@ export const useStore = create<State>((setState, getState) => ({
 }))
 
 // Autosave the open project to this browser (IndexedDB), a moment after the last edit.
+let autosave = true
+/** The in-chat widget keeps projects in memory only. */
+export function disableAutosave() { autosave = false }
 let saveTimer: ReturnType<typeof setTimeout> | undefined
 useStore.subscribe((s, prev) => {
   if (!s.project || s.project === prev.project) return
   const p = s.project
   clearTimeout(saveTimer)
   saveTimer = setTimeout(async () => {
-    if (p.id === 'sample-maplewoods' && p.updatedAt === p.createdAt) return
-    await set(`project:${p.id}`, p)
-    const recent = [{ id: p.id, name: p.name, updatedAt: p.updatedAt }, ...useStore.getState().recent.filter((r) => r.id !== p.id)].slice(0, 20)
-    await set('projects', recent)
-    useStore.setState({ recent })
+    if (!autosave || (p.id === 'sample-maplewoods' && p.updatedAt === p.createdAt)) return
+    try {
+      await set(`project:${p.id}`, p)
+      const recent = [{ id: p.id, name: p.name, updatedAt: p.updatedAt }, ...useStore.getState().recent.filter((r) => r.id !== p.id)].slice(0, 20)
+      await set('projects', recent)
+      useStore.setState({ recent })
+    } catch { /* storage unavailable: keep working in memory */ }
   }, 600)
 })
 

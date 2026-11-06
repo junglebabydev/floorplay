@@ -9,12 +9,21 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc --noEmit -p mcp",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:mcp": "vite build -c mcp/vite.widget.config.ts",
+    "mcp": "pnpm build:mcp && tsx mcp/node.ts",
+    "mcp:smoke": "tsx mcp/smoke.ts",
+    "mcp:host": "vite -c mcp/vite.host.config.ts",
+    "mcp:dev": "wrangler dev -c mcp/wrangler.toml --port 8787",
+    "mcp:deploy": "wrangler deploy -c mcp/wrangler.toml"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
+    "@modelcontextprotocol/ext-apps": "2.0.4",
+    "@modelcontextprotocol/node": "2.0.0",
+    "@modelcontextprotocol/server": "2.0.0",
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.2",
     "idb-keyval": "^6.3.0",
@@ -22,9 +31,11 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "three": "0.187.0",
+    "zod": "^4.6.7",
     "zustand": "5.0.16"
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "2.0.0",
     "@tailwindcss/vite": "4.3.4",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
@@ -32,9 +43,12 @@
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "6.2.1",
     "tailwindcss": "4.3.4",
+    "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "vite": "8.3.6",
-    "vitest": "5.1.0"
+    "vite-plugin-singlefile": "^2.3.4",
+    "vitest": "5.1.0",
+    "wrangler": "^4.158.0"
   },
   "packageManager": "pnpm@10.28.0",
   "engines": {

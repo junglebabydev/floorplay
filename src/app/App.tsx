@@ -4,6 +4,7 @@ import { isConfigured, PROVIDERS } from '../ai/providers'
 import { sampleProject } from '../core/sample'
 import { emptyProject, uid } from '../core/types'
 import { exportModel, readProjectFile, saveProjectFile } from './files'
+import { decodeProject } from './share'
 import { useStore, type Panel } from './store'
 import { PlanEditor } from './components/PlanEditor'
 import { Viewer3D } from './components/Viewer3D'
@@ -164,6 +165,14 @@ export function App() {
     loadRecent()
     // Links from the landing page can open the sample straight away.
     if (new URLSearchParams(location.search).has('sample') && !useStore.getState().project) loadSample()
+    // "Open in Floorplay" from ChatGPT or Claude passes the whole project in the URL fragment.
+    if (location.hash.startsWith('#p=')) {
+      const data = location.hash.slice(3)
+      history.replaceState(null, '', location.pathname + location.search)
+      decodeProject(data)
+        .then((p) => { useStore.getState().setProject({ ...p, id: uid('proj') }); useStore.getState().setPanel(p.furniture.length ? 'furniture' : 'plan'); useStore.getState().notify(`Opened "${p.name}" from your chat. It is saved in this browser.`) })
+        .catch((e) => useStore.getState().notify((e as Error).message, 'error'))
+    }
   }, [loadRecent])
   return (
     <div className="flex h-full flex-col text-[#1f1d1a]">
