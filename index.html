@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Floorplay: your new home in 3D</title>
+<meta name="description" content="Upload a floor plan, add your furniture from photos, and see what fits in 3D. Free, open source, runs in your browser with your own AI key." />
+<meta name="theme-color" content="#2f6f5e" />
+<meta property="og:title" content="Floorplay: your new home in 3D" />
+<meta property="og:description" content="Upload a floor plan, add your furniture from photos, and see what fits. Free and open source." />
+<meta property="og:image" content="hero.png" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="manifest.webmanifest" />
+<style>
+  :root { --ink: #1f1d1a; --muted: #5d5850; --soft: #8a847a; --bg: #f6f5f2; --card: #ffffff; --line: rgba(0,0,0,.08); --accent: #2f6f5e; --accent-ink: #ffffff; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  header.top { display: flex; align-items: center; gap: 12px; padding: 18px 0; }
+  .logo { display: flex; align-items: center; gap: 9px; font-weight: 650; letter-spacing: -.01em; text-decoration: none; }
+  .logo img { width: 30px; height: 30px; }
+  nav { margin-left: auto; display: flex; gap: 18px; font-size: 14px; color: var(--muted); }
+  nav a { text-decoration: none; } nav a:hover { color: var(--ink); }
+  .hero { padding: 48px 0 28px; text-align: center; }
+  h1 { font-size: clamp(34px, 5.6vw, 58px); line-height: 1.05; letter-spacing: -.03em; margin: 0 auto; max-width: 820px; }
+  .sub { font-size: clamp(16px, 2.1vw, 19px); color: var(--muted); max-width: 640px; margin: 18px auto 0; }
+  .ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 28px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 12px; padding: 12px 20px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid var(--line); background: var(--card); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+  .note { font-size: 13px; color: var(--soft); margin-top: 12px; }
+  .shot { margin: 40px auto 0; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: #fff; box-shadow: 0 20px 60px rgba(31,29,26,.12); max-width: 1000px; }
+  .shot img { display: block; width: 100%; height: auto; }
+  section { padding: 64px 0; }
+  h2 { font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -.02em; margin: 0 0 10px; }
+  .lead { color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .num { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+  .providers { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .chip { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 14px; font-weight: 550; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details p { color: var(--muted); margin: 10px 0 0; font-size: 15px; }
+  .band { background: #1f2a26; color: #eef3f1; border-radius: 22px; padding: 40px 28px; text-align: center; }
+  .band .sub { color: #c5d3ce; }
+  footer { padding: 36px 0 48px; color: var(--soft); font-size: 14px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
+  @media (max-width: 640px) { nav .hide-sm { display: none; } section { padding: 44px 0; } .hero { padding-top: 24px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="./"><img src="favicon.svg" alt="" />Floorplay</a>
+    <nav>
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#faq">FAQ</a>
+      <a href="https://github.com/junglebabydev/floorplay">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>See your new home in 3D before you move in.</h1>
+    <p class="sub">Upload a floor plan, add your own furniture from photos, and find out what fits. Free, open source, and private: it runs in your browser with your own AI.</p>
+    <div class="ctas">
+      <a class="btn primary" href="app/">Open Floorplay</a>
+      <a class="btn" href="app/?sample=1">Try the sample home</a>
+      <a class="btn" href="https://github.com/junglebabydev/floorplay">View source</a>
+    </div>
+    <p class="note">Nothing to install. Works on laptops and tablets.</p>
+    <div class="shot"><img src="hero.png" alt="A furnished 3-bedroom condo in Floorplay, with the 2D plan beside the 3D view" width="2000" height="1100" /></div>
+  </div>
+
+  <section>
+    <h2>Why Floorplay</h2>
+    <p class="lead">Moving is stressful enough. Know where the sofa goes before the movers arrive.</p>
+    <div class="grid">
+      <div class="card"><h3>Free</h3><p>No account, no subscription. You only pay your AI provider for what you use, often a few cents per plan.</p></div>
+      <div class="card"><h3>Open source</h3><p>MIT licensed. Read the code, run your own copy, or build on it.</p></div>
+      <div class="card"><h3>Private</h3><p>Your plans, photos and keys stay in your browser. There is no Floorplay server.</p></div>
+      <div class="card"><h3>Your AI, your choice</h3><p>Anthropic, OpenAI, Gemini, OpenRouter, or a model running on your own computer.</p></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="lead">Four steps from a brochure page to a furnished 3D home.</p>
+    <div class="grid">
+      <div class="card"><span class="num">1</span><h3>Upload your plan</h3><p>A developer brochure, a photo of a printed plan, or a screenshot from a listing.</p></div>
+      <div class="card"><span class="num">2</span><h3>AI traces it</h3><p>Walls, doors, windows and rooms, scaled from the printed dimensions or room areas. Fix anything by hand.</p></div>
+      <div class="card"><span class="num">3</span><h3>Add your furniture</h3><p>Snap a photo of each piece. AI identifies it and its size, using the published size when it knows the product.</p></div>
+      <div class="card"><span class="num">4</span><h3>Check the fit in 3D</h3><p>Drag pieces into place. Floorplay flags anything that overlaps, sits in a wall, or blocks a door.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Bring your own AI</h2>
+    <p class="lead">Paste an API key from any of these, or point Floorplay at a local model for fully offline use.</p>
+    <div class="providers">
+      <span class="chip">Anthropic Claude</span><span class="chip">OpenAI</span><span class="chip">Google Gemini</span><span class="chip">OpenRouter</span><span class="chip">Ollama</span><span class="chip">LM Studio</span><span class="chip">Any OpenAI-compatible server</span>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2>Questions</h2>
+    <details><summary>Is it really free?</summary><p>Yes. Floorplay itself costs nothing. Tracing a plan or identifying furniture uses your AI provider, which bills you directly at its usual rates. You can also draw plans by hand with no AI at all.</p></details>
+    <details><summary>Where does my data go?</summary><p>Projects are saved in your browser. When you use AI, the image goes straight from your browser to the provider you chose, with your key. You can save a project file to keep a copy or move it to another computer.</p></details>
+    <details><summary>Can I use my ChatGPT or Claude subscription instead of an API key?</summary><p>Not yet. Anthropic does not allow Claude subscriptions in other apps, and OpenAI's Sign in with ChatGPT is limited to partner apps. A Floorplay app that runs inside ChatGPT and Claude, using your subscription there, is planned.</p></details>
+    <details><summary>How accurate is it?</summary><p>As accurate as the plan and your checks. AI tracing gets the layout close, then you confirm the scale against a wall you know and nudge anything that is off. Furniture sizes use published dimensions when the product is recognised, and estimates otherwise, which you can edit.</p></details>
+    <details><summary>Can I install it?</summary><p>There is nothing to install. In Chrome or Edge you can add it to your desktop or home screen from the address bar if you like.</p></details>
+  </section>
+
+  <section>
+    <div class="band">
+      <h2>Ready to plan your move?</h2>
+      <p class="sub">Open Floorplay, upload your plan, and see it in 3D in a couple of minutes.</p>
+      <div class="ctas"><a class="btn primary" href="app/">Open Floorplay</a><a class="btn" href="app/?sample=1">Try the sample home</a></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Floorplay · MIT licence</span>
+    <span><a href="https://github.com/junglebabydev/floorplay">GitHub</a> · <a href="https://github.com/junglebabydev/floorplay/issues">Report a problem</a></span>
+  </footer>
+</div>
+</body>
+</html>
