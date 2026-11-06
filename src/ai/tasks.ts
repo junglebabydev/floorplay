@@ -78,7 +78,8 @@ export function validateTrace(raw: unknown): TraceResult {
 
 // ---------- Identify furniture ----------
 
-export const FURNITURE_SCHEMA = obj({
+/** With room names, the model also says which room the piece belongs in (empty when unsure). */
+export const furnitureSchema = (roomNames: string[] = []) => obj({
   kind: { type: 'string', enum: FURNITURE_KIND_LIST },
   name: { type: 'string' },
   width_cm: num,
@@ -89,7 +90,9 @@ export const FURNITURE_SCHEMA = obj({
   size_source: { type: 'string', enum: ['catalog', 'estimate'] },
   confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
   notes: { type: 'string' },
+  room: roomNames.length ? { type: 'string', enum: [...roomNames, ''] } : { type: 'string' },
 })
+export const FURNITURE_SCHEMA = furnitureSchema()
 
 export const FURNITURE_SYSTEM = `You identify furniture from photos so it can be placed to scale in a 3D floor plan.
 
@@ -100,7 +103,8 @@ kind: the closest category. name: a short name a person would use, including bra
 Size: width is across the front, depth is front to back, height is floor to top (headboard included for beds, screen top for a TV on its own stand). If you recognise the product or the user gives a product name or link, use its published dimensions and set size_source to catalog. Otherwise estimate from visual cues (seat height about 45 cm, table height about 75 cm, standard mattress sizes, door height about 210 cm, floor tiles) and set size_source to estimate.
 
 color and accent: the main and secondary colours as #rrggbb hex.
-notes: one short sentence on what the size is based on.`
+notes: one short sentence on what the size is based on.
+room: if a list of rooms is given, the room this piece most likely belongs in (a bed in a bedroom, a desk in the study, a dining table in the dining area); otherwise an empty string.`
 
 export interface FurnitureGuess {
   kind: FurnitureKind
@@ -113,12 +117,14 @@ export interface FurnitureGuess {
   sizeSource: 'catalog' | 'estimate'
   confidence: 'high' | 'medium' | 'low'
   notes: string
+  room: string
 }
 
-export async function identifyFurniture(settings: AISettings, images: ImageInput[], hint: string, signal?: AbortSignal): Promise<FurnitureGuess> {
-  const prompt = `Identify this piece of furniture and its size.${hint.trim() ? `\n\nWhat the owner says about it: ${hint.trim()}` : ''}`
-  const raw = await generateJSON(settings, { system: FURNITURE_SYSTEM, prompt, images, schema: FURNITURE_SCHEMA, schemaName: 'furniture', effort: 'medium', signal })
-  return validateFurniture(raw)
+export async function identifyFurniture(settings: AISettings, images: ImageInput[], hint: string, signal?: AbortSignal, roomNames: string[] = []): Promise<FurnitureGuess> {
+  const rooms = roomNames.length ? `\n\nRooms in the new home: ${roomNames.join(', ')}.` : ''
+  const prompt = `Identify this piece of furniture and its size.${hint.trim() ? `\n\nWhat the owner says about it: ${hint.trim()}` : ''}${rooms}`
+  const raw = await generateJSON(settings, { system: FURNITURE_SYSTEM, prompt, images, schema: furnitureSchema(roomNames), schemaName: 'furniture', effort: 'medium', signal })
+  return validateFurniture(raw, roomNames)
 }
 
 const hex = (v: unknown, fallback: string) => (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v.trim()) ? v.trim().toLowerCase() : fallback)
@@ -127,7 +133,7 @@ const cm = (v: unknown, fallback: number, min: number, max: number) => {
   return x && x > 0 ? Math.max(min, Math.min(max, Math.round(x) / 100)) : fallback
 }
 
-export function validateFurniture(raw: unknown): FurnitureGuess {
+export function validateFurniture(raw: unknown, roomNames: string[] = []): FurnitureGuess {
   const r = rec(raw)
   const kind = (FURNITURE_KIND_LIST.includes(r.kind as FurnitureKind) ? r.kind : 'other') as FurnitureKind
   const def = FURNITURE_KINDS[kind]
@@ -142,6 +148,7 @@ export function validateFurniture(raw: unknown): FurnitureGuess {
     sizeSource: r.size_source === 'catalog' ? 'catalog' : 'estimate',
     confidence: r.confidence === 'high' || r.confidence === 'low' ? r.confidence : 'medium',
     notes: typeof r.notes === 'string' ? r.notes.slice(0, 300) : '',
+    room: typeof r.room === 'string' && (!roomNames.length || roomNames.includes(r.room)) ? r.room : '',
   }
 }
 
@@ -163,4 +170,46 @@ export async function readRoomFinish(settings: AISettings, image: ImageInput, ro
   const r = rec(raw)
   const floor = (FLOOR_FINISH_LIST.includes(r.floor as FloorFinish) ? r.floor : 'plain') as FloorFinish
   return { floor, floorColor: hex(r.floor_color, '#cbbba3'), wallColor: hex(r.wall_color, '#f1efea'), notes: typeof r.notes === 'string' ? r.notes.slice(0, 300) : '' }
+}
+
+// ---------- Finishes for every room from photos and video frames ----------
+
+export const finishesSchema = (roomNames: string[]) => obj({
+  rooms: {
+    type: 'array',
+    items: obj({
+      name: roomNames.length ? { type: 'string', enum: roomNames } : { type: 'string' },
+      floor: { type: 'string', enum: FLOOR_FINISH_LIST },
+      floor_color: { type: 'string' },
+      wall_color: { type: 'string' },
+    }),
+  },
+  notes: { type: 'string' },
+})
+
+export const FINISHES_SYSTEM = `You read interior finishes from photos and video frames of a home, for a 3D model of its floor plan.
+
+You are given the list of rooms on the plan. For each room you can actually see in the images, say its floor finish (the closest type) and the dominant floor and wall colours as #rrggbb hex, as they would look in even daylight. Use what rooms look like to tell them apart: bathrooms and kitchens are tiled, bedrooms often have wood or carpet, the living room opens to the balcony. Leave out rooms you cannot see. Ignore furniture, people and clutter.
+
+notes: one short sentence, for example which rooms were not visible.`
+
+export interface RoomFinishes { name: string; floor: FloorFinish; floorColor: string; wallColor: string }
+
+export async function readFinishes(settings: AISettings, images: ImageInput[], roomNames: string[], signal?: AbortSignal): Promise<{ rooms: RoomFinishes[]; notes: string }> {
+  const prompt = `Rooms on the plan: ${roomNames.join(', ')}.\n\nThese ${images.length} images are photos and video frames from inside the home. What are the floor and wall finishes of each room you can see?`
+  const raw = await generateJSON(settings, { system: FINISHES_SYSTEM, prompt, images, schema: finishesSchema(roomNames), schemaName: 'room_finishes', effort: 'medium', signal })
+  return validateFinishes(raw, roomNames)
+}
+
+export function validateFinishes(raw: unknown, roomNames: string[]): { rooms: RoomFinishes[]; notes: string } {
+  const r = rec(raw)
+  const seen = new Set<string>()
+  const rooms = arr(r.rooms).map(rec).flatMap((o) => {
+    const name = typeof o.name === 'string' ? o.name : ''
+    if (!roomNames.includes(name) || seen.has(name)) return []
+    seen.add(name)
+    const floor = (FLOOR_FINISH_LIST.includes(o.floor as FloorFinish) ? o.floor : 'plain') as FloorFinish
+    return [{ name, floor, floorColor: hex(o.floor_color, '#cbbba3'), wallColor: hex(o.wall_color, '#f1efea') }]
+  })
+  return { rooms, notes: typeof r.notes === 'string' ? r.notes.slice(0, 300) : '' }
 }

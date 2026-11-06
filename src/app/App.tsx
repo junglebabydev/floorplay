@@ -12,6 +12,7 @@ import { RoomsPanel } from './components/RoomsPanel'
 import { FurniturePanel } from './components/FurniturePanel'
 import { SettingsDialog } from './components/SettingsDialog'
 import { Button } from './components/ui'
+import { Wizard } from './components/Wizard'
 
 function useOpenFile() {
   const { setProject, notify } = useStore()
@@ -107,11 +108,12 @@ function Welcome() {
         <h1 className="text-3xl font-semibold tracking-tight text-[#1f1d1a] sm:text-4xl">Turn a floor plan into a 3D home.<br />See if your furniture fits.</h1>
         <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[#4a463f]">Upload a plan, let AI trace it, then add your own furniture from photos. Everything stays in your browser, and you bring your own AI key.</p>
         <div className="mt-7 grid gap-3 sm:grid-cols-3">
-          <BigChoice title="Start with a floor plan" body="Upload an image and trace it with AI or by hand." onClick={() => { setProject(emptyProject()); useStore.getState().setPanel('plan') }} testId="start-new" primary />
+          <BigChoice title="Start" body="Upload your plan, home photos and furniture. AI does the rest." onClick={() => useStore.setState({ wizardOpen: true })} testId="start-wizard" primary />
           <BigChoice title="Try the sample" body="A furnished 3-bedroom condo, no key needed." onClick={loadSample} testId="start-sample" />
           <BigChoice title="Open a project file" body="Continue from a .floorplay.json you saved." onClick={() => fileRef.current?.click()} />
         </div>
         <input ref={fileRef} type="file" accept=".json,application/json" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) openFile(f); e.target.value = '' }} />
+        <p className="mt-3 text-sm text-[#6b665e]">Or <button className="font-medium text-[#2f6f5e] underline" onClick={() => { setProject(emptyProject()); useStore.getState().setPanel('plan') }} data-testid="start-new">draw a plan by hand</button> in the editor.</p>
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-black/8 bg-white px-4 py-3 text-sm">
           <KeyRound size={16} className="text-[#2f6f5e]" />
           <span className="flex-1 text-[#4a463f]">{isConfigured(ai) ? <>AI connected: <b>{PROVIDERS[ai.active].label}</b>, {ai.providers[ai.active].model}</> : <>Works with Anthropic, OpenAI, Gemini, OpenRouter or a local model.</>}</span>
@@ -157,7 +159,7 @@ function Toast() {
 }
 
 export function App() {
-  const { project, view, settingsOpen, loadRecent } = useStore()
+  const { project, view, settingsOpen, wizardOpen, loadRecent } = useStore()
   useEffect(() => {
     loadRecent()
     // Links from the landing page can open the sample straight away.
@@ -176,7 +178,7 @@ export function App() {
             </main>
           </div>
         </>
-      ) : <Welcome />}
+      ) : wizardOpen ? <Wizard /> : <Welcome />}
       {settingsOpen && <SettingsDialog />}
       <Toast />
     </div>

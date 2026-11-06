@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { generateJSON, parseJSONText, setFetch, AIError } from './client'
 import { defaultAISettings, pickModel, type ProviderId } from './providers'
-import { validateFurniture, validateTrace, TRACE_SCHEMA } from './tasks'
+import { furnitureSchema, validateFinishes, validateFurniture, validateTrace, TRACE_SCHEMA } from './tasks'
 
 type Call = { url: string; init: RequestInit; body: Record<string, unknown> }
 
@@ -146,6 +146,33 @@ describe('answer handling', () => {
     expect(f).toMatchObject({ kind: 'bed', w: 1.76, d: 2.09, h: 1, color: '#ffffff', sizeSource: 'catalog' })
     expect(f.accent).toMatch(/^#/)
     expect(validateFurniture({ kind: 'spaceship' }).kind).toBe('other')
+  })
+
+  it('keeps only room suggestions that exist on the plan', () => {
+    expect(validateFurniture({ kind: 'bed', room: 'Master Bedroom' }, ['Master Bedroom', 'Study']).room).toBe('Master Bedroom')
+    expect(validateFurniture({ kind: 'bed', room: 'Garage' }, ['Master Bedroom']).room).toBe('')
+  })
+
+  it('reads finishes for known rooms only, once each', () => {
+    const f = validateFinishes({
+      rooms: [
+        { name: 'Kitchen', floor: 'tile', floor_color: '#C9C8C3', wall_color: '#ffffff' },
+        { name: 'Kitchen', floor: 'wood', floor_color: '#000000', wall_color: '#000000' },
+        { name: 'Attic', floor: 'carpet', floor_color: '#111111', wall_color: '#111111' },
+        { name: 'Living', floor: 'lava', floor_color: 'beige', wall_color: '#eeeeee' },
+      ],
+      notes: 'Bedrooms not visible.',
+    }, ['Kitchen', 'Living'])
+    expect(f.rooms).toEqual([
+      { name: 'Kitchen', floor: 'tile', floorColor: '#c9c8c3', wallColor: '#ffffff' },
+      { name: 'Living', floor: 'plain', floorColor: '#cbbba3', wallColor: '#eeeeee' },
+    ])
+    expect(f.notes).toMatch(/Bedrooms/)
+  })
+
+  it('puts the plan room names into the furniture schema', () => {
+    const s = furnitureSchema(['Study']) as unknown as { properties: { room: { enum: string[] } } }
+    expect(s.properties.room.enum).toEqual(['Study', ''])
   })
 
   it('picks a preferred model from a list', () => {

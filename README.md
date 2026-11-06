@@ -8,14 +8,22 @@ Floorplay is a free, open-source web app. It runs entirely in your browser with 
 
 ![Floorplay showing a furnished 3-bedroom condo, plan beside 3D view](public/hero.png)
 
-## What it does
+## How it works
 
-1. **Trace a plan.** Upload a brochure page, a photo of a printed plan or a screenshot. AI traces the walls, doors, windows and rooms, and sets the scale from printed dimensions or room areas. Fix anything with the plan tools, and confirm the scale by clicking a wall you know the length of.
-2. **See it in 3D.** Walls with real openings, doors, windows and floor finishes, viewed from any angle, with a cut-away mode to see into rooms.
-3. **Match the finishes.** Optionally upload a room photo and AI picks the floor type and colour.
-4. **Add your furniture.** Photograph each piece (add the product name or a link if you have it). AI identifies it and its size, using published dimensions when it recognises the product. Drag pieces into place and rotate them.
-5. **Check the fit.** Pieces that overlap, sit in a wall or block a door swing are flagged in red. **Hide furniture** shows the empty home.
-6. **Keep it.** Projects autosave in your browser. Save a project file to back it up or move it, and export the 3D model as `.glb`.
+Three uploads and one button:
+
+1. **Floor plan.** A brochure page, a photo of a printed plan or a screenshot.
+2. **Photos and videos of the home** (optional). A walkthrough video or room photos. Videos are sampled into still frames in the browser.
+3. **Your furniture.** One photo per piece, with the product name if you know it.
+
+Press **Process** and Floorplay:
+
+- traces the walls, doors, windows and rooms, scaled from printed dimensions or room areas;
+- matches each room's floor and wall colours from your photos and video;
+- identifies every piece of furniture and its size (published dimensions when it recognises the product) and which room it belongs in;
+- arranges the pieces: rugs and tables in the middle, chairs around the table, everything else against a wall facing into the room, clear of doors and each other.
+
+You land on the furnished home in 2D and 3D. Drag, rotate or resize anything; overlaps, pieces in walls and blocked doors show in red, and **Hide furniture** shows the empty home. The full editor (walls, doors, windows, rooms, set scale) is there for anything the AI got wrong. Projects autosave in the browser, save to a file, and export as `.glb`.
 
 You can also draw a plan entirely by hand with no AI at all.
 

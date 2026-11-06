@@ -24,6 +24,7 @@ interface State {
   showImage: boolean
   ai: AISettings
   settingsOpen: boolean
+  wizardOpen: boolean
   toast: { text: string; tone: 'info' | 'error' } | null
   past: Project[]
   future: Project[]
@@ -75,13 +76,14 @@ export const useStore = create<State>((setState, getState) => ({
   showImage: true,
   ai: typeof localStorage !== 'undefined' ? loadAI() : defaultAISettings(),
   settingsOpen: false,
+  wizardOpen: false,
   toast: null,
   past: [],
   future: [],
   lastEditKey: null,
   lastEditAt: 0,
 
-  setProject: (p) => setState({ project: p, selection: null, past: [], future: [], tool: 'select' }),
+  setProject: (p) => setState({ project: p, selection: null, past: [], future: [], tool: 'select', wizardOpen: false }),
   update: (fn, key) => {
     const s = getState()
     if (!s.project) return
