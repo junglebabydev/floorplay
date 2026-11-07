@@ -105,7 +105,7 @@ export function Wizard() {
     <div className="min-h-full overflow-y-auto bg-[#f6f5f2]" data-testid="wizard">
       <div className="mx-auto max-w-2xl px-5 py-8 sm:py-12">
         <button onClick={close} className="mb-6 flex items-center gap-2 text-sm font-semibold text-[#2f6f5e]">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#2f6f5e] text-white"><LayoutTemplate size={16} /></span> Floorplay
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#2f6f5e] text-white"><LayoutTemplate size={16} /></span> Floorimate
         </button>
 
         <ol className="mb-6 flex items-center gap-2">
@@ -154,7 +154,7 @@ export function Wizard() {
             <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-semibold tracking-tight">Add photos and videos of the home</h2>
-                <p className="mt-1 text-sm text-[#6b665e]">Optional. A walkthrough video or a few room photos lets Floorplay match the real floors, like marble, tiles or parquet.</p>
+                <p className="mt-1 text-sm text-[#6b665e]">Optional. A walkthrough video or a few room photos lets Floorimate match the real floors, like marble, tiles or parquet.</p>
               </div>
               <DropZone onFiles={(f) => setMedia([...media, ...f])} accept="image/*,video/*" multiple testId="wizard-media">
                 <Film size={22} className="text-[#2f6f5e]" />

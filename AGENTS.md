@@ -1,4 +1,4 @@
-# Agents guide: Floorplay
+# Agents guide: Floorimate
 
 A static web app (Vite, React 19, TypeScript, three.js via react-three-fiber, Tailwind v4). No backend: AI calls go from the browser to the user's provider with the user's key.
 
@@ -12,8 +12,11 @@ A static web app (Vite, React 19, TypeScript, three.js via react-three-fiber, Ta
 
 - `src/core`: plan model and pure geometry. Units are metres; plan x grows right, y grows down; 3D world is (x, 0, y) with Y up. Furniture rotation is degrees clockwise from above, 0 means the front faces +y.
 - `src/ai`: provider clients (`client.ts`), provider list (`providers.ts`), prompts, schemas and validators (`tasks.ts`). Anthropic goes through the official `@anthropic-ai/sdk` with `dangerouslyAllowBrowser` by design (user-held keys); other providers use `fetch`. Schemas must stay within what Anthropic structured outputs, OpenAI strict mode and Gemini all accept: every object `additionalProperties: false` with all keys required, nullables as `anyOf` with null, no numeric or length constraints.
+- `src/ai/render.ts`: lifelike renders through an image model (Gemini or OpenRouter only). `tier: 'photo'` on a JSON request uses the provider's cheaper `photoModel`.
+- `src/core/drawing.ts` turns a plan into 2D primitives shared by the PDF (`src/app/exports.ts`) and DXF (`src/core/dxf.ts`, R12, millimetres, y up) exports.
 - `src/three`: framework-free builders. `scene.ts` builds walls, openings and floors; `furniture.ts` has one generator per furniture kind, facing +Z with the bottom at y = 0.
 - `mcp`: the MCP App for ChatGPT and Claude. `home.ts` turns what the chat model traced into a project (pure, tested); `server.ts` registers the `show_home` tool and the `ui://` view; `widget/` is the in-chat view (single-file build via `pnpm build:mcp`); `worker.ts` (Cloudflare) and `node.ts` (local) serve it through `http.ts`. Keep the tool stateless and read-only.
+- `src/app/pro.ts`: Pro switch and licence hook. Free exports get the "Made with Floorimate" mark (`watermark.ts`). `video.ts` records the walkthrough with MediaRecorder; `actions.ts` gates exports.
 - `src/app`: React UI. State is one zustand store (`store.ts`); every edit goes through `update(fn, key)` so undo works and drags merge into one step.
 
 ## Rules

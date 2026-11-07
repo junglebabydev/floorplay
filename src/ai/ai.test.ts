@@ -56,7 +56,7 @@ describe('OpenAI-compatible providers', () => {
     const calls = fakeFetch(() => json({ error: { message: 'Invalid key' } }, 401))
     await expect(generateJSON(settings('openrouter'), req)).rejects.toMatchObject({ kind: 'auth' })
     expect(calls).toHaveLength(1)
-    expect((calls[0].init.headers as Record<string, string>)['X-Title']).toBe('Floorplay')
+    expect((calls[0].init.headers as Record<string, string>)['X-Title']).toBe('Floorimate')
   })
 })
 
@@ -178,5 +178,34 @@ describe('answer handling', () => {
   it('picks a preferred model from a list', () => {
     expect(pickModel('anthropic', ['claude-haiku-4-5', 'claude-opus-5-5', 'claude-sonnet-5-5'])).toBe('claude-opus-5-5')
     expect(pickModel('openai', ['o3', 'gpt-4o'])).toBe('gpt-4o')
+  })
+})
+
+describe('Photo model and defaults', () => {
+  it('sends photo jobs to the cheaper photo model and plans to the main model', async () => {
+    const calls = fakeFetch(() => json({ choices: [{ message: { content: '{"ok":true}' } }] }))
+    const s = settings('openrouter', 'google/gemini-3.8-flash')
+    s.providers.openrouter.photoModel = 'qwen/qwen3-vl-235b-a22b-instruct'
+    await generateJSON(s, req)
+    await generateJSON(s, { ...req, tier: 'photo' })
+    expect(calls[0].body.model).toBe('google/gemini-3.8-flash')
+    expect(calls[1].body.model).toBe('qwen/qwen3-vl-235b-a22b-instruct')
+    expect(calls[0].body.max_tokens).toBe(16000)
+  })
+
+  it('uses the plan model for photos when no photo model is set', async () => {
+    const calls = fakeFetch(() => json({ choices: [{ message: { content: '{}' } }] }))
+    const s = settings('openrouter', 'm-plan')
+    s.providers.openrouter.photoModel = ''
+    await generateJSON(s, { ...req, tier: 'photo' })
+    expect(calls[0].body.model).toBe('m-plan')
+  })
+
+  it('defaults to Gemini, with the eval winners for plans, photos and renders', () => {
+    const d = defaultAISettings()
+    expect(d.active).toBe('gemini')
+    expect(d.providers.gemini).toMatchObject({ model: 'gemini-3.8-flash', photoModel: 'gemini-3.5-flash-lite', imageModel: 'gemini-3.1-flash-image' })
+    expect(d.providers.openrouter.imageModel).toBe('google/gemini-nano-banana-2.1')
+    expect(d.providers.anthropic.imageModel).toBeUndefined()
   })
 })

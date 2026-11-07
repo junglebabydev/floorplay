@@ -1,4 +1,4 @@
-// A furnished sample home so people can explore Floorplay without an API key.
+// A furnished sample home so people can explore Floorimate without an API key.
 // Traced from a 3-bedroom condo brochure plan (scale 0.0205 m per brochure pixel) and
 // furnished from the owners' photos. The brochure image itself is not included.
 import { FLOOR_FINISHES } from './catalog'

@@ -1,6 +1,6 @@
 name: Deploy MCP server
 
-# Deploys the Floorplay MCP App (for ChatGPT and Claude connectors) to Cloudflare Workers.
+# Deploys the Floorimate MCP App (for ChatGPT and Claude connectors) to Cloudflare Workers.
 # Needs two repository secrets: CLOUDFLARE_API_TOKEN (template "Edit Cloudflare Workers")
 # and CLOUDFLARE_ACCOUNT_ID. Without them this workflow does nothing.
 

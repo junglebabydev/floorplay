@@ -1,5 +1,5 @@
 {
-  "name": "floorplay",
+  "name": "floorimate",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -27,6 +27,7 @@
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.2",
     "idb-keyval": "^6.3.0",
+    "jspdf": "4.2.1",
     "lucide-react": "^1.69.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",

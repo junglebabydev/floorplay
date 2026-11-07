@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Box, ChevronDown, Columns2, Download, FolderOpen, Home, KeyRound, LayoutTemplate, Map as MapIcon, Plus, Redo2, Save, Sofa, Undo2 } from 'lucide-react'
+import { Box, Clapperboard, ChevronDown, Columns2, Crown, Download, FileText, FolderOpen, Home, Image as ImageIcon, KeyRound, LayoutTemplate, Map as MapIcon, Plus, Redo2, Ruler, Save, Sofa, Undo2 } from 'lucide-react'
 import { isConfigured, PROVIDERS } from '../ai/providers'
 import { sampleProject } from '../core/sample'
 import { emptyProject, uid } from '../core/types'
@@ -14,6 +14,11 @@ import { FurniturePanel } from './components/FurniturePanel'
 import { SettingsDialog } from './components/SettingsDialog'
 import { Button } from './components/ui'
 import { Wizard } from './components/Wizard'
+import { ProDialog } from './components/ProDialog'
+import { RenderDialog } from './components/RenderDialog'
+import { runAction, stopVideo } from './actions'
+import { BRAND } from './brand'
+import { PRO, isPro } from './pro'
 
 function useOpenFile() {
   const { setProject, notify } = useStore()
@@ -28,7 +33,7 @@ function loadSample() {
 }
 
 function TopBar() {
-  const { project, update, undo, redo, past, future, view, setView, ai, openSettings, notify, recent, openRecent, setProject } = useStore()
+  const { project, update, undo, redo, past, future, view, setView, ai, openSettings, notify, recent, openRecent, setProject, license, openPro } = useStore()
   const [menu, setMenu] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const openFile = useOpenFile()
@@ -38,7 +43,7 @@ function TopBar() {
     <header className="flex h-12 flex-none items-center gap-2 border-b border-black/8 bg-white px-3">
       <button className="flex items-center gap-1.5 pr-1 font-semibold tracking-tight text-[#1f1d1a]" onClick={() => setProject(null)} title="Home">
         <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#2f6f5e] text-white"><LayoutTemplate size={16} /></span>
-        <span className="hidden sm:inline">Floorplay</span>
+        <span className="hidden sm:inline">Floorimate</span>
       </button>
       <input value={p.name} onChange={(e) => update((pr) => ({ ...pr, name: e.target.value }), 'name')} className="w-36 min-w-0 rounded-md border border-transparent px-2 py-1 text-sm font-medium hover:border-black/10 focus:border-[#2f6f5e] focus:outline-none sm:w-56" aria-label="Project name" />
       <div className="relative">
@@ -48,7 +53,13 @@ function TopBar() {
             <MenuItem icon={<Plus size={15} />} onClick={() => { setProject(emptyProject()); setMenu(false) }}>New project</MenuItem>
             <MenuItem icon={<FolderOpen size={15} />} onClick={() => { fileRef.current?.click(); setMenu(false) }}>Open project file…</MenuItem>
             <MenuItem icon={<Save size={15} />} onClick={() => { saveProjectFile(p); setMenu(false) }}>Save project file</MenuItem>
-            <MenuItem icon={<Download size={15} />} onClick={async () => { setMenu(false); try { await exportModel(p, true); } catch (e) { notify((e as Error).message, 'error') } }}>Export 3D model (.glb)</MenuItem>
+            <div className="mt-1 border-t border-black/8 px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-[#8a847a]">Export</div>
+            <MenuItem icon={<ImageIcon size={15} />} onClick={() => { setMenu(false); runAction('image') }} testId="export-image">Image of the 3D view (.png)</MenuItem>
+            <MenuItem icon={<FileText size={15} />} onClick={() => { setMenu(false); runAction('pdf') }} pro={!isPro(license)} testId="export-pdf">Plan for movers (.pdf)</MenuItem>
+            <MenuItem icon={<Ruler size={15} />} onClick={() => { setMenu(false); runAction('dxf') }} pro={!isPro(license)} testId="export-dxf">CAD drawing (.dxf)</MenuItem>
+            <MenuItem icon={<Clapperboard size={15} />} onClick={() => { setMenu(false); runAction('video') }} pro={!isPro(license)} testId="export-video">Walkthrough video</MenuItem>
+            <MenuItem icon={<Download size={15} />} onClick={async () => { setMenu(false); try { await exportModel(p, true); } catch (e) { notify((e as Error).message, 'error') } }}>3D model (.glb)</MenuItem>
+            <div className="mt-1 border-t border-black/8" />
             <MenuItem icon={<Home size={15} />} onClick={() => { loadSample(); setMenu(false) }}>Open the sample home</MenuItem>
             {recent.filter((r) => r.id !== p.id).length > 0 && <div className="mt-1 border-t border-black/8 px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-[#8a847a]">Recent</div>}
             {recent.filter((r) => r.id !== p.id).slice(0, 6).map((r) => <MenuItem key={r.id} onClick={() => { openRecent(r.id); setMenu(false) }}>{r.name}</MenuItem>)}
@@ -61,6 +72,9 @@ function TopBar() {
         <button title="Redo (Ctrl+Shift+Z)" disabled={!future.length} onClick={redo} className="rounded-md p-1.5 hover:bg-black/5 disabled:opacity-30"><Redo2 size={16} /></button>
       </div>
       <div className="ml-auto flex items-center gap-2">
+        <button onClick={() => openPro({})} data-testid="open-pro" className={`hidden items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold sm:flex ${isPro(license) ? 'text-[#b8862b]' : 'border border-[#b8862b]/40 text-[#8a6420] hover:bg-[#b8862b]/8'}`}>
+          <Crown size={13} />{isPro(license) ? 'Pro' : PRO.checkoutLive ? 'Get Pro' : 'Pro'}
+        </button>
         <div className="flex rounded-lg border border-black/10 bg-[#f4f3ef] p-0.5" role="tablist">
           {([['2d', <MapIcon key="a" size={14} />, '2D'], ['split', <Columns2 key="b" size={14} />, 'Both'], ['3d', <Box key="c" size={14} />, '3D']] as const).map(([v, icon, label]) => (
             <button key={v} onClick={() => setView(v)} data-testid={`view-${v}`} className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ${view === v ? 'bg-white shadow-sm' : 'text-[#6b665e]'}`}>{icon}<span className="hidden md:inline">{label}</span></button>
@@ -75,8 +89,13 @@ function TopBar() {
   )
 }
 
-function MenuItem({ icon, children, onClick }: { icon?: React.ReactNode; children: React.ReactNode; onClick: () => void }) {
-  return <button onClick={onClick} className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-black/5">{icon ?? <span className="w-[15px]" />}<span className="truncate">{children}</span></button>
+function MenuItem({ icon, children, onClick, pro, testId }: { icon?: React.ReactNode; children: React.ReactNode; onClick: () => void; pro?: boolean; testId?: string }) {
+  return (
+    <button onClick={onClick} data-testid={testId} className="flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-black/5">
+      {icon ?? <span className="w-[15px]" />}<span className="truncate">{children}</span>
+      {pro && <span className="ml-auto rounded-full bg-[#b8862b]/12 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-[#8a6420]">Pro</span>}
+    </button>
+  )
 }
 
 function Sidebar() {
@@ -105,19 +124,19 @@ function Welcome() {
   return (
     <div className="min-h-full overflow-y-auto bg-[#f6f5f2]">
       <div className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
-        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#2f6f5e]"><span className="grid h-7 w-7 place-items-center rounded-lg bg-[#2f6f5e] text-white"><LayoutTemplate size={16} /></span> Floorplay</div>
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#2f6f5e]"><span className="grid h-7 w-7 place-items-center rounded-lg bg-[#2f6f5e] text-white"><LayoutTemplate size={16} /></span> Floorimate</div>
         <h1 className="text-3xl font-semibold tracking-tight text-[#1f1d1a] sm:text-4xl">Turn a floor plan into a 3D home.<br />See if your furniture fits.</h1>
         <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[#4a463f]">Upload a plan, let AI trace it, then add your own furniture from photos. Everything stays in your browser, and you bring your own AI key.</p>
         <div className="mt-7 grid gap-3 sm:grid-cols-3">
           <BigChoice title="Start" body="Upload your plan, home photos and furniture. AI does the rest." onClick={() => useStore.setState({ wizardOpen: true })} testId="start-wizard" primary />
           <BigChoice title="Try the sample" body="A furnished 3-bedroom condo, no key needed." onClick={loadSample} testId="start-sample" />
-          <BigChoice title="Open a project file" body="Continue from a .floorplay.json you saved." onClick={() => fileRef.current?.click()} />
+          <BigChoice title="Open a project file" body="Continue from a .floorimate.json you saved." onClick={() => fileRef.current?.click()} />
         </div>
         <input ref={fileRef} type="file" accept=".json,application/json" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) openFile(f); e.target.value = '' }} />
         <p className="mt-3 text-sm text-[#6b665e]">Or <button className="font-medium text-[#2f6f5e] underline" onClick={() => { setProject(emptyProject()); useStore.getState().setPanel('plan') }} data-testid="start-new">draw a plan by hand</button> in the editor.</p>
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-black/8 bg-white px-4 py-3 text-sm">
           <KeyRound size={16} className="text-[#2f6f5e]" />
-          <span className="flex-1 text-[#4a463f]">{isConfigured(ai) ? <>AI connected: <b>{PROVIDERS[ai.active].label}</b>, {ai.providers[ai.active].model}</> : <>Works with Anthropic, OpenAI, Gemini, OpenRouter or a local model.</>}</span>
+          <span className="flex-1 text-[#4a463f]">{isConfigured(ai) ? <>AI connected: <b>{PROVIDERS[ai.active].label}</b>, {ai.providers[ai.active].model}</> : <>Free to start with a Google Gemini key. Also works with Claude, OpenAI, OpenRouter or a local model.</>}</span>
           <Button onClick={() => openSettings(true)}>{isConfigured(ai) ? 'Change' : 'Connect AI'}</Button>
         </div>
         {recent.length > 0 && (
@@ -134,7 +153,7 @@ function Welcome() {
             </ul>
           </div>
         )}
-        <p className="mt-10 text-xs text-[#8a847a]">Free and open source. <a className="underline" href="https://github.com/junglebabydev/floorplay" target="_blank" rel="noreferrer">Source on GitHub</a>.</p>
+        <p className="mt-10 text-xs text-[#8a847a]">Free and open source. <a className="underline" href={BRAND.repo} target="_blank" rel="noreferrer">Source on GitHub</a>.</p>
       </div>
     </div>
   )
@@ -160,12 +179,12 @@ function Toast() {
 }
 
 export function App() {
-  const { project, view, settingsOpen, wizardOpen, loadRecent } = useStore()
+  const { project, view, settingsOpen, wizardOpen, renderOpen, loadRecent } = useStore()
   useEffect(() => {
     loadRecent()
     // Links from the landing page can open the sample straight away.
     if (new URLSearchParams(location.search).has('sample') && !useStore.getState().project) loadSample()
-    // "Open in Floorplay" from ChatGPT or Claude passes the whole project in the URL fragment.
+    // "Open in Floorimate" from ChatGPT or Claude passes the whole project in the URL fragment.
     if (location.hash.startsWith('#p=')) {
       const data = location.hash.slice(3)
       history.replaceState(null, '', location.pathname + location.search)
@@ -183,12 +202,14 @@ export function App() {
             <div className="max-h-[45vh] min-h-0 overflow-hidden md:max-h-none"><Sidebar /></div>
             <main className="flex min-h-0 flex-1 flex-col lg:flex-row">
               {view !== '3d' && <div className="min-h-[280px] min-w-0 flex-1 border-black/8 lg:border-r"><PlanEditor /></div>}
-              {view !== '2d' && <div className="min-h-[280px] min-w-0 flex-1"><Viewer3D /></div>}
+              {view !== '2d' && <div className="min-h-[280px] min-w-0 flex-1"><Viewer3D onRender={() => useStore.setState({ renderOpen: true })} onVideo={() => runAction('video')} onStopVideo={stopVideo} /></div>}
             </main>
           </div>
         </>
       ) : wizardOpen ? <Wizard /> : <Welcome />}
       {settingsOpen && <SettingsDialog />}
+      {renderOpen && project && <RenderDialog />}
+      <ProDialog />
       <Toast />
     </div>
   )

@@ -27,4 +27,4 @@ createHttpServer(async (req, res) => {
     if (!res.headersSent) res.writeHead(500)
     res.end()
   }
-}).listen(port, () => console.log(`Floorplay MCP server on http://localhost:${port}/mcp`))
+}).listen(port, () => console.log(`Floorimate MCP server on http://localhost:${port}/mcp`))

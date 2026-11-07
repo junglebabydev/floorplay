@@ -15,12 +15,12 @@ function withCors(res: Response): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers })
 }
 
-const INFO = (origin: string) => `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Floorplay MCP</title>
+const INFO = (origin: string) => `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Floorimate MCP</title>
 <style>body{font:16px/1.55 system-ui,sans-serif;max-width:640px;margin:48px auto;padding:0 20px;color:#1f1d1a;background:#f6f5f2}code{background:#fff;border:1px solid #0001;border-radius:6px;padding:2px 6px}</style>
-<h1>Floorplay for ChatGPT and Claude</h1>
-<p>This is the Floorplay MCP server (v${VERSION}). Add it as a connector to see floor plans as furnished 3D homes inside the chat.</p>
+<h1>Floorimate for ChatGPT and Claude</h1>
+<p>This is the Floorimate MCP server (v${VERSION}). Add it as a connector to see floor plans as furnished 3D homes inside the chat.</p>
 <p>Connector URL: <code>${origin}/mcp</code></p>
-<p><a href="https://junglebabydev.github.io/floorplay/">Floorplay web app</a> · <a href="https://github.com/junglebabydev/floorplay">Source</a></p>`
+<p><a href="https://junglebabydev.github.io/floorplay/">Floorimate web app</a> · <a href="https://github.com/junglebabydev/floorplay">Source</a></p>`
 
 export function makeFetchHandler(widgetHtml: string) {
   const mcp = createMcpHandler(() => createServer(widgetHtml), { onerror: (e) => console.error('[mcp]', e.message) })

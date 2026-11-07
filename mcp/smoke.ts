@@ -1,8 +1,8 @@
-// Calls a running Floorplay MCP server like a chat host would: list tools, call show_home, read the view.
+// Calls a running Floorimate MCP server like a chat host would: list tools, call show_home, read the view.
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 
 const url = process.argv[2] ?? 'http://localhost:3001/mcp'
-const client = new Client({ name: 'floorplay-smoke', version: '1.0.0' })
+const client = new Client({ name: 'floorimate-smoke', version: '1.0.0' })
 await client.connect(new StreamableHTTPClientTransport(new URL(url)))
 
 const tools = await client.listTools()

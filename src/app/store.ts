@@ -3,6 +3,7 @@ import { del, get, set } from 'idb-keyval'
 import { defaultAISettings, type AISettings } from '../ai/providers'
 import { emptyProject, type Project } from '../core/types'
 import { touch } from '../core/ops'
+import { loadLicense, saveLicense, type License, type ProFeature } from './pro'
 
 export type Tool = 'select' | 'wall' | 'door' | 'window' | 'room' | 'scale'
 export type ViewMode = '2d' | '3d' | 'split'
@@ -25,6 +26,12 @@ interface State {
   ai: AISettings
   settingsOpen: boolean
   wizardOpen: boolean
+  license: License | null
+  /** Open Pro dialog, with the feature that sent the person there (if any). */
+  proOpen: { feature?: ProFeature } | null
+  renderOpen: boolean
+  /** Walkthrough video being recorded: progress 0..1. */
+  recording: number | null
   toast: { text: string; tone: 'info' | 'error' } | null
   past: Project[]
   future: Project[]
@@ -43,6 +50,8 @@ interface State {
   toggle: (k: 'showFurniture' | 'cutWalls' | 'showLabels' | 'showImage') => void
   setAI: (ai: AISettings) => void
   openSettings: (open: boolean) => void
+  setLicense: (l: License | null) => void
+  openPro: (o: { feature?: ProFeature } | null) => void
   notify: (text: string, tone?: 'info' | 'error') => void
   loadRecent: () => Promise<void>
   openRecent: (id: string) => Promise<void>
@@ -78,6 +87,10 @@ export const useStore = create<State>((setState, getState) => ({
   ai: loadAI(),
   settingsOpen: false,
   wizardOpen: false,
+  license: typeof window === 'undefined' ? null : loadLicense(),
+  proOpen: null,
+  renderOpen: false,
+  recording: null,
   toast: null,
   past: [],
   future: [],
@@ -119,6 +132,8 @@ export const useStore = create<State>((setState, getState) => ({
     setState({ ai })
   },
   openSettings: (settingsOpen) => setState({ settingsOpen }),
+  setLicense: (license) => { saveLicense(license); setState({ license }) },
+  openPro: (proOpen) => setState({ proOpen }),
   notify: (text, tone = 'info') => {
     setState({ toast: { text, tone } })
     setTimeout(() => { if (getState().toast?.text === text) setState({ toast: null }) }, tone === 'error' ? 8000 : 4000)

@@ -1,4 +1,4 @@
-// A minimal MCP Apps host for trying the Floorplay view locally, without ChatGPT or Claude.
+// A minimal MCP Apps host for trying the Floorimate view locally, without ChatGPT or Claude.
 // Run `pnpm mcp` in one terminal and `pnpm mcp:host` in another, then open the printed URL.
 import { AppBridge, PostMessageTransport } from '@modelcontextprotocol/ext-apps/app-bridge'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
@@ -35,7 +35,7 @@ function sampleArgs() {
   }
 }
 
-const client = new Client({ name: 'floorplay-test-host', version: '1.0.0' })
+const client = new Client({ name: 'floorimate-test-host', version: '1.0.0' })
 await client.connect(new StreamableHTTPClientTransport(new URL(server)))
 const { tools } = await client.listTools()
 const tool = tools.find((t) => t.name === 'show_home')!
@@ -49,7 +49,7 @@ const html = ((await client.readResource({ uri })).contents[0] as { text: string
 const iframe = document.createElement('iframe')
 iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin')
 chat.appendChild(iframe)
-const bridge = new AppBridge(client, { name: 'floorplay-test-host', version: '1.0.0' }, {
+const bridge = new AppBridge(client, { name: 'floorimate-test-host', version: '1.0.0' }, {
   openLinks: {}, serverTools: client.getServerCapabilities()?.tools, serverResources: client.getServerCapabilities()?.resources, updateModelContext: { text: {} },
 }, { hostContext: { theme: 'light', platform: 'web', displayMode: 'inline', availableDisplayModes: ['inline', 'fullscreen'], containerDimensions: { maxHeight: 6000 } } })
 bridge.onopenlink = async ({ url }) => { window.__host.openedLinks.push(url); return {} }

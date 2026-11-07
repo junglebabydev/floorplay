@@ -1,15 +1,15 @@
-// The Floorplay MCP App: one tool that shows an interactive 3D home in ChatGPT or Claude.
+// The Floorimate MCP App: one tool that shows an interactive 3D home in ChatGPT or Claude.
 import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from '@modelcontextprotocol/ext-apps/server'
 import { McpServer, type CallToolResult, type ReadResourceResult } from '@modelcontextprotocol/server'
 import { buildHome, SHOW_HOME_DESCRIPTION, showHomeInput } from './home'
 
-export const WIDGET_URI = 'ui://floorplay/home.html'
+export const WIDGET_URI = 'ui://floorimate/home.html'
 export const VERSION = '0.2.0'
 
 export function createServer(widgetHtml: string): McpServer {
   const server = new McpServer(
-    { name: 'Floorplay', version: VERSION, title: 'Floorplay', websiteUrl: 'https://junglebabydev.github.io/floorplay/' },
-    { instructions: "Floorplay turns a floor plan image into an interactive, furnished 3D home inside the chat. Read the images yourself, then call show_home with the traced plan, any room finishes and the person's furniture." },
+    { name: 'Floorimate', version: VERSION, title: 'Floorimate', websiteUrl: 'https://junglebabydev.github.io/floorplay/' },
+    { instructions: "Floorimate turns a floor plan image into an interactive, furnished 3D home inside the chat. Read the images yourself, then call show_home with the traced plan, any room finishes and the person's furniture." },
   )
 
   registerAppTool(
@@ -32,7 +32,7 @@ export function createServer(widgetHtml: string): McpServer {
     },
   )
 
-  registerAppResource(server, 'Floorplay 3D home', WIDGET_URI, { mimeType: RESOURCE_MIME_TYPE, description: 'Interactive 3D view of a furnished home' }, async (): Promise<ReadResourceResult> => ({
+  registerAppResource(server, 'Floorimate 3D home', WIDGET_URI, { mimeType: RESOURCE_MIME_TYPE, description: 'Interactive 3D view of a furnished home' }, async (): Promise<ReadResourceResult> => ({
     contents: [{ uri: WIDGET_URI, mimeType: RESOURCE_MIME_TYPE, text: widgetHtml }],
   }))
 

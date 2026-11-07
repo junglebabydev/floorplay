@@ -15,12 +15,12 @@ function download(blob: Blob, name: string) {
 }
 
 export function saveProjectFile(p: Project) {
-  download(new Blob([JSON.stringify(p)], { type: 'application/json' }), `${slug(p.name)}.floorplay.json`)
+  download(new Blob([JSON.stringify(p)], { type: 'application/json' }), `${slug(p.name)}.floorimate.json`)
 }
 
 export async function readProjectFile(file: File): Promise<Project> {
   const data = JSON.parse(await file.text())
-  if (data?.version !== 1 || !Array.isArray(data.walls) || !Array.isArray(data.rooms)) throw new Error('This is not a Floorplay project file.')
+  if (data?.version !== 1 || !Array.isArray(data.walls) || !Array.isArray(data.rooms)) throw new Error('This is not a Floorimate project file.')
   return { furniture: [], openings: [], ...data } as Project
 }
 

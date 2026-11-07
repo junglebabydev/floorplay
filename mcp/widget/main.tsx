@@ -1,4 +1,4 @@
-// The Floorplay view that ChatGPT and Claude render inside the chat (an MCP App).
+// The Floorimate view that ChatGPT and Claude render inside the chat (an MCP App).
 import { StrictMode, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { App, McpUiHostContext } from '@modelcontextprotocol/ext-apps'
@@ -22,11 +22,11 @@ home: ${p.name}
 pieces: ${p.furniture.length}
 clashes: ${clashes.length}
 ---
-The person rearranged the furniture in the Floorplay view. Current layout:
+The person rearranged the furniture in the Floorimate view. Current layout:
 ${p.furniture.map((f) => `- ${f.name}: ${roomOf(f.x, f.y)}, at (${f.x.toFixed(2)}, ${f.y.toFixed(2)}) m, facing ${Math.round(f.rotation)}°`).join('\n')}`
 }
 
-function Floorplay({ app }: { app: App }) {
+function Floorimate({ app }: { app: App }) {
   const project = useStore((s) => s.project)
   const [view, setView] = useState<'3d' | 'plan'>('3d')
   const [ctx, setCtx] = useState<McpUiHostContext | undefined>(app.getHostContext())
@@ -84,7 +84,7 @@ function Floorplay({ app }: { app: App }) {
           </button>
         )}
         <button onClick={openInApp} disabled={opening} className="flex items-center gap-1 rounded-lg bg-[#2f6f5e] px-2.5 py-1 text-xs font-medium text-white disabled:opacity-60" data-testid="widget-open">
-          <ExternalLink size={13} /><span className="hidden sm:inline">Open in Floorplay</span>
+          <ExternalLink size={13} /><span className="hidden sm:inline">Open in Floorimate</span>
         </button>
       </header>
       <main className="min-h-0 flex-1">{view === '3d' ? <Viewer3D /> : <PlanEditor />}</main>
@@ -95,19 +95,19 @@ function Floorplay({ app }: { app: App }) {
 
 function Root() {
   const { app, error } = useApp({
-    appInfo: { name: 'Floorplay', version: '0.2.0' },
+    appInfo: { name: 'Floorimate', version: '0.2.0' },
     capabilities: {},
     onAppCreated: (a) => {
       a.ontoolresult = async (result) => {
         const p = (result.structuredContent as { project?: Project } | undefined)?.project
         if (p) useStore.getState().setProject(p)
       }
-      a.onerror = (e) => console.error('[floorplay]', e)
+      a.onerror = (e) => console.error('[floorimate]', e)
     },
   })
-  if (error) return <div className="p-4 text-sm text-[#b42f2f]">Floorplay could not start: {error.message}</div>
+  if (error) return <div className="p-4 text-sm text-[#b42f2f]">Floorimate could not start: {error.message}</div>
   if (!app) return null
-  return <Floorplay app={app} />
+  return <Floorimate app={app} />
 }
 
 createRoot(document.getElementById('root')!).render(<StrictMode><Root /></StrictMode>)

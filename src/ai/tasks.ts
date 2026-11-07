@@ -1,4 +1,4 @@
-// The three AI jobs Floorplay runs: trace a floor plan, identify a piece of furniture from photos,
+// The three AI jobs Floorimate runs: trace a floor plan, identify a piece of furniture from photos,
 // and read a room's finishes from a photo. Each has a JSON schema (kept within what Anthropic,
 // OpenAI strict mode and Gemini all accept) and a validator that turns the answer into safe values.
 import { FLOOR_FINISH_LIST, FURNITURE_KIND_LIST } from '../core/catalog'
@@ -84,7 +84,7 @@ room: if a list of rooms is given, the room this piece most likely belongs in (a
 export async function identifyFurniture(settings: AISettings, images: ImageInput[], hint: string, signal?: AbortSignal, roomNames: string[] = []): Promise<FurnitureGuess> {
   const rooms = roomNames.length ? `\n\nRooms in the new home: ${roomNames.join(', ')}.` : ''
   const prompt = `Identify this piece of furniture and its size.${hint.trim() ? `\n\nWhat the owner says about it: ${hint.trim()}` : ''}${rooms}`
-  const raw = await generateJSON(settings, { system: FURNITURE_SYSTEM, prompt, images, schema: furnitureSchema(roomNames), schemaName: 'furniture', effort: 'medium', signal })
+  const raw = await generateJSON(settings, { system: FURNITURE_SYSTEM, prompt, images, schema: furnitureSchema(roomNames), schemaName: 'furniture', effort: 'medium', tier: 'photo', signal })
   return validateFurniture(raw, roomNames)
 }
 
@@ -102,7 +102,7 @@ export const ROOM_SYSTEM = `You read interior finishes from a room photo for a 3
 export interface RoomFinishGuess { floor: FloorFinish; floorColor: string; wallColor: string; notes: string }
 
 export async function readRoomFinish(settings: AISettings, image: ImageInput, roomName: string, signal?: AbortSignal): Promise<RoomFinishGuess> {
-  const raw = await generateJSON(settings, { system: ROOM_SYSTEM, prompt: `This photo shows the ${roomName}. What are its floor and wall finishes?`, images: [image], schema: ROOM_SCHEMA, schemaName: 'room_finish', effort: 'low', signal })
+  const raw = await generateJSON(settings, { system: ROOM_SYSTEM, prompt: `This photo shows the ${roomName}. What are its floor and wall finishes?`, images: [image], schema: ROOM_SCHEMA, schemaName: 'room_finish', effort: 'low', tier: 'photo', signal })
   const r = rec(raw)
   const floor = (FLOOR_FINISH_LIST.includes(r.floor as FloorFinish) ? r.floor : 'plain') as FloorFinish
   return { floor, floorColor: hex(r.floor_color, '#cbbba3'), wallColor: hex(r.wall_color, '#f1efea'), notes: typeof r.notes === 'string' ? r.notes.slice(0, 300) : '' }
@@ -131,7 +131,7 @@ notes: one short sentence, for example which rooms were not visible.`
 
 export async function readFinishes(settings: AISettings, images: ImageInput[], roomNames: string[], signal?: AbortSignal): Promise<{ rooms: RoomFinishes[]; notes: string }> {
   const prompt = `Rooms on the plan: ${roomNames.join(', ')}.\n\nThese ${images.length} images are photos and video frames from inside the home. What are the floor and wall finishes of each room you can see?`
-  const raw = await generateJSON(settings, { system: FINISHES_SYSTEM, prompt, images, schema: finishesSchema(roomNames), schemaName: 'room_finishes', effort: 'medium', signal })
+  const raw = await generateJSON(settings, { system: FINISHES_SYSTEM, prompt, images, schema: finishesSchema(roomNames), schemaName: 'room_finishes', effort: 'medium', tier: 'photo', signal })
   return validateFinishes(raw, roomNames)
 }
 

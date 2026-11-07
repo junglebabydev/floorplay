@@ -3,14 +3,31 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three/addons/controls/OrbitControls.js'
-import { Eye, EyeOff, Scissors, Tag, Rotate3d, Square } from 'lucide-react'
+import { Eye, EyeOff, Scissors, Tag, Rotate3d, Square, Sparkles, Clapperboard, X } from 'lucide-react'
 import { labelPoint, polygonArea } from '../../core/geometry'
 import type { Project } from '../../core/types'
 import { buildHome, disposeObject } from '../../three/scene'
 import { buildFurniture, placeFurniture } from '../../three/furniture'
 import { useStore } from '../store'
 
-export const sceneRegistry: { home?: THREE.Object3D; furniture?: THREE.Object3D } = {}
+export const sceneRegistry: {
+  home?: THREE.Object3D
+  furniture?: THREE.Object3D
+  gl?: THREE.WebGLRenderer
+  scene?: THREE.Scene
+  camera?: THREE.PerspectiveCamera
+  controls?: OrbitControlsImpl | null
+} = {}
+
+/** Lets exports, renders and the walkthrough recorder reach the live renderer and camera. */
+function Registrar() {
+  const { gl, scene, camera, controls } = useThree() as unknown as { gl: THREE.WebGLRenderer; scene: THREE.Scene; camera: THREE.PerspectiveCamera; controls: OrbitControlsImpl | null }
+  useEffect(() => {
+    Object.assign(sceneRegistry, { gl, scene, camera, controls })
+    return () => { if (sceneRegistry.gl === gl) Object.assign(sceneRegistry, { gl: undefined, scene: undefined, camera: undefined, controls: undefined }) }
+  }, [gl, scene, camera, controls])
+  return null
+}
 
 function centre(p: Project): [THREE.Vector3, number] {
   const xs: number[] = [], ys: number[] = []
@@ -141,8 +158,9 @@ function CameraRig({ mode }: { mode: 'orbit' | 'top' }) {
   return null
 }
 
-export function Viewer3D() {
-  const { showFurniture, cutWalls, showLabels, toggle, select } = useStore()
+/** The web app passes the Render and Video actions; the in-chat view leaves them out (and their code). */
+export function Viewer3D({ onRender, onVideo, onStopVideo }: { onRender?: () => void; onVideo?: () => void; onStopVideo?: () => void }) {
+  const { showFurniture, cutWalls, showLabels, toggle, select, recording } = useStore()
   const [mode, setMode] = useState<'orbit' | 'top'>('orbit')
   const labelEls = useRef(new Map<string, HTMLDivElement>())
   return (
@@ -162,6 +180,7 @@ export function Viewer3D() {
         <Clipping />
         <OrbitControls makeDefault enableDamping maxPolarAngle={Math.PI * 0.495} />
         <CameraRig mode={mode} />
+        <Registrar />
       </Canvas>
       <LabelOverlay els={labelEls} />
       <div className="absolute right-3 top-3 z-10 flex flex-wrap justify-end gap-1.5">
@@ -169,7 +188,16 @@ export function Viewer3D() {
         <ToolbarButton active={cutWalls} onClick={() => toggle('cutWalls')} icon={<Scissors size={15} />} label="Cut walls" />
         <ToolbarButton active={showLabels} onClick={() => toggle('showLabels')} icon={<Tag size={15} />} label="Labels" />
         <ToolbarButton active={mode === 'top'} onClick={() => setMode(mode === 'top' ? 'orbit' : 'top')} icon={mode === 'top' ? <Rotate3d size={15} /> : <Square size={15} />} label={mode === 'top' ? '3D view' : 'Top view'} />
+        {onRender && <ToolbarButton active={false} onClick={() => { select(null); onRender() }} icon={<Sparkles size={15} />} label="Render" testId="open-render" />}
+        {onVideo && <ToolbarButton active={false} onClick={onVideo} icon={<Clapperboard size={15} />} label="Video" testId="record-video" />}
       </div>
+      {recording != null && (
+        <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#1f1d1a] px-4 py-2 text-xs font-medium text-white shadow-lg" data-testid="recording">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-[#e25b4b]" />
+          Recording walkthrough {Math.round(recording * 100)}%
+          {onStopVideo && <button className="ml-1 rounded-full p-0.5 hover:bg-white/15" title="Stop" onClick={onStopVideo}><X size={13} /></button>}
+        </div>
+      )}
     </div>
   )
 }

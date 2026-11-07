@@ -31,6 +31,6 @@ export async function prepareImage(file: Blob, opts: { maxSide?: number; keepPng
 }
 
 /** A small JPEG thumbnail for storing with a furniture item. */
-export async function thumbnail(file: Blob, side = 256): Promise<string> {
+export async function thumbnail(file: Blob, side = 480): Promise<string> {
   return (await prepareImage(file, { maxSide: side })).dataUrl
 }

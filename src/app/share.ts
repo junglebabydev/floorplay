@@ -1,6 +1,7 @@
 // Packs a project into a URL fragment so it can move between the chat widget and the web app
 // without any server. The plan image and furniture photos are left out to keep links short.
 import type { Project } from '../core/types'
+import { BRAND } from './brand'
 
 const toB64url = (bytes: Uint8Array) => {
   let s = ''
@@ -18,9 +19,9 @@ export async function encodeProject(p: Project): Promise<string> {
 export async function decodeProject(data: string): Promise<Project> {
   const stream = new Blob([fromB64url(data)]).stream().pipeThrough(new DecompressionStream('deflate-raw'))
   const p = JSON.parse(await new Response(stream).text())
-  if (p?.version !== 1 || !Array.isArray(p.walls) || !Array.isArray(p.rooms)) throw new Error('This link does not contain a Floorplay project.')
+  if (p?.version !== 1 || !Array.isArray(p.walls) || !Array.isArray(p.rooms)) throw new Error('This link does not contain a Floorimate project.')
   return { furniture: [], openings: [], ...p } as Project
 }
 
-export const APP_URL = 'https://junglebabydev.github.io/floorplay/app/'
+export const APP_URL = BRAND.app
 export const shareUrl = async (p: Project, base = APP_URL) => `${base}#p=${await encodeProject(p)}`

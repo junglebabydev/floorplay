@@ -1,6 +1,6 @@
-# Floorplay MCP server on Cloudflare Workers (free plan is enough).
+# Floorimate MCP server on Cloudflare Workers (free plan is enough).
 # Deploy: pnpm mcp:deploy  (or the "Deploy MCP server" GitHub Action)
-name = "floorplay-mcp"
+name = "floorimate-mcp"
 main = "worker.ts"
 compatibility_date = "2026-10-01"
 compatibility_flags = ["nodejs_compat"]

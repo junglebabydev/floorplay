@@ -1,4 +1,4 @@
-// Calls the user's own AI provider straight from the browser. Keys never touch a Floorplay server
+// Calls the user's own AI provider straight from the browser. Keys never touch a Floorimate server
 // (there isn't one): requests go from this page to the provider.
 import Anthropic from '@anthropic-ai/sdk'
 import type { AISettings, ProviderId, ProviderSettings } from './providers'
@@ -14,6 +14,8 @@ export interface JSONRequest {
   schemaName: string
   /** How hard the model should think; mapped per provider. */
   effort: 'low' | 'medium' | 'high'
+  /** Photo jobs (furniture, finishes) use the provider's cheaper photo model when one is set. */
+  tier?: 'plan' | 'photo'
   signal?: AbortSignal
 }
 
@@ -30,7 +32,8 @@ export function setFetch(f: FetchLike) { fetcher = f }
 
 export async function generateJSON(settings: AISettings, req: JSONRequest): Promise<unknown> {
   const id = settings.active
-  const p = settings.providers[id]
+  const base = settings.providers[id]
+  const p = req.tier === 'photo' && base.photoModel?.trim() ? { ...base, model: base.photoModel.trim() } : base
   const text = await callProvider(id, p, req)
   return parseJSONText(text)
 }
@@ -103,7 +106,7 @@ async function callOpenAICompatible(base: string, p: ProviderSettings, req: JSON
   if (!base) throw new AIError('Set the server address for your local or custom provider in Settings.', 'other')
   const headers: Record<string, string> = { 'content-type': 'application/json' }
   if (p.apiKey.trim()) headers.authorization = `Bearer ${p.apiKey.trim()}`
-  if (flavour === 'openrouter') { headers['HTTP-Referer'] = globalThis.location?.origin ?? 'https://junglebabydev.github.io/floorplay/'; headers['X-Title'] = 'Floorplay' }
+  if (flavour === 'openrouter') { headers['HTTP-Referer'] = globalThis.location?.origin ?? 'https://junglebabydev.github.io/floorplay/'; headers['X-Title'] = 'Floorimate' }
   const content = [
     { type: 'text', text: req.prompt },
     ...req.images.map((im) => ({ type: 'image_url', image_url: { url: `data:${im.mediaType};base64,${im.base64}`, detail: 'high' } })),
@@ -118,6 +121,8 @@ async function callOpenAICompatible(base: string, p: ProviderSettings, req: JSON
   let lastErr: AIError | null = null
   for (const response_format of formats) {
     const body: Record<string, unknown> = { model: p.model, messages }
+    // OpenRouter otherwise uses each host's default output limit, which can cut long traces short.
+    if (flavour === 'openrouter') body.max_tokens = 16000
     if (response_format) body.response_format = response_format
     if (!response_format || response_format.type === 'json_object') {
       messages[1] = { role: 'user', content: [...content, { type: 'text', text: `Reply with JSON only, matching this schema:\n${JSON.stringify(req.schema)}` }] }

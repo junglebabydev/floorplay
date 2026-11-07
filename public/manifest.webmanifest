@@ -1,6 +1,6 @@
 {
-  "name": "Floorplay",
-  "short_name": "Floorplay",
+  "name": "Floorimate",
+  "short_name": "Floorimate",
   "description": "Turn a floor plan into a 3D home and see if your furniture fits.",
   "start_url": "./app/",
   "scope": "./",

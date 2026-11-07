@@ -38,11 +38,11 @@ export const showHomeInput = {
     height_cm: z.number(),
     color: z.string().describe('#rrggbb main colour'),
     accent: z.string().describe('#rrggbb secondary colour'),
-    room: z.string().describe('The room it belongs in, from rooms, or "" to let Floorplay choose'),
+    room: z.string().describe('The room it belongs in, from rooms, or "" to let Floorimate choose'),
   })).default([]).describe("The person's own furniture, identified from their photos, with real sizes when you know the product."),
 }
 
-export const SHOW_HOME_DESCRIPTION = `Builds an interactive 3D model of a home from its floor plan, furnished with the person's own furniture, and shows it in the chat. The person can rotate it, switch to the plan view, drag furniture, hide furniture, and open it in the Floorplay web app.
+export const SHOW_HOME_DESCRIPTION = `Builds an interactive 3D model of a home from its floor plan, furnished with the person's own furniture, and shows it in the chat. The person can rotate it, switch to the plan view, drag furniture, hide furniture, and open it in the Floorimate web app.
 
 Use it when someone shares a floor plan image (a brochure page, a listing screenshot, a photo of a printed plan) and wants to see it in 3D or check whether their furniture fits.
 
@@ -54,7 +54,7 @@ How to fill it in, from the images in the conversation:
 - finishes: if the person shares photos or a walkthrough video of the home, the floor type and colours of each room you can see.
 - furniture: if the person shares photos of their furniture, one entry per piece with its size in cm (published size when you recognise the product or they name it, otherwise your best estimate) and the room it belongs in.
 
-Floorplay works out the scale, squares and joins the walls, and arranges the furniture against walls and around tables without clashes. To change anything (move a piece to another room, fix a wall, add furniture), call this tool again with the full updated arguments.`
+Floorimate works out the scale, squares and joins the walls, and arranges the furniture against walls and around tables without clashes. To change anything (move a piece to another room, fix a wall, add furniture), call this tool again with the full updated arguments.`
 
 export type ShowHomeArgs = z.infer<z.ZodObject<typeof showHomeInput>>
 

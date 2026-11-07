@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Floorplay: your new home in 3D</title>
+<title>Floorimate: your new home in 3D</title>
 <meta name="description" content="Upload a floor plan, add your furniture from photos, and see what fits in 3D. Free, open source, runs in your browser with your own AI key." />
 <meta name="theme-color" content="#2f6f5e" />
-<meta property="og:title" content="Floorplay: your new home in 3D" />
+<meta property="og:title" content="Floorimate: your new home in 3D" />
 <meta property="og:description" content="Upload a floor plan, add your furniture from photos, and see what fits. Free and open source." />
 <meta property="og:image" content="hero.png" />
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -46,6 +46,14 @@
   details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; }
   summary { cursor: pointer; font-weight: 600; }
   details p { color: var(--muted); margin: 10px 0 0; font-size: 15px; }
+  .split { display: grid; gap: 22px; grid-template-columns: 1.1fr 1fr; align-items: center; }
+  .split img { width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 14px 40px rgba(31,29,26,.12); display: block; }
+  .ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .ticks li { padding-left: 26px; position: relative; color: var(--muted); }
+  .ticks li b { color: var(--ink); }
+  .ticks li::before { content: ""; position: absolute; left: 0; top: 6px; width: 14px; height: 14px; border-radius: 4px; background: var(--accent); }
+  .pill { display: inline-block; font-size: 12px; font-weight: 650; letter-spacing: .02em; color: #8a6420; background: rgba(184,134,43,.12); border-radius: 999px; padding: 3px 10px; margin-bottom: 10px; }
+  @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
   .band { background: #1f2a26; color: #eef3f1; border-radius: 22px; padding: 40px 28px; text-align: center; }
   .band .sub { color: #c5d3ce; }
   footer { padding: 36px 0 48px; color: var(--soft); font-size: 14px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
@@ -55,7 +63,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="logo" href="./"><img src="favicon.svg" alt="" />Floorplay</a>
+    <a class="logo" href="./"><img src="favicon.svg" alt="" />Floorimate</a>
     <nav>
       <a class="hide-sm" href="#how">How it works</a>
       <a class="hide-sm" href="#faq">FAQ</a>
@@ -65,30 +73,30 @@
 
   <div class="hero">
     <h1>See your new home in 3D before you move in.</h1>
-    <p class="sub">Upload your floor plan, a few photos of the home and your furniture. Press Process and see it all in 3D. Free, open source, and private: it runs in your browser with your own AI.</p>
+    <p class="sub">Upload your floor plan, a few photos of the home and your furniture. Press Process and see it all in 3D. Free to start with a Google Gemini key, open source, and private: it runs in your browser.</p>
     <div class="ctas">
-      <a class="btn primary" href="app/">Open Floorplay</a>
+      <a class="btn primary" href="app/">Open Floorimate</a>
       <a class="btn" href="app/?sample=1">Try the sample home</a>
       <a class="btn" href="https://github.com/junglebabydev/floorplay">View source</a>
     </div>
     <p class="note">Nothing to install. Works on laptops and tablets.</p>
-    <div class="shot"><img src="hero.png" alt="A furnished 3-bedroom condo in Floorplay, with the 2D plan beside the 3D view" width="2000" height="1100" /></div>
+    <div class="shot"><img src="hero.png" alt="A furnished 3-bedroom condo in Floorimate, with the 2D plan beside the 3D view" width="2000" height="1100" /></div>
   </div>
 
   <section>
-    <h2>Why Floorplay</h2>
+    <h2>Why Floorimate</h2>
     <p class="lead">Moving is stressful enough. Know where the sofa goes before the movers arrive.</p>
     <div class="grid">
-      <div class="card"><h3>Free</h3><p>No account, no subscription. You only pay your AI provider for what you use, often a few cents per plan.</p></div>
+      <div class="card"><h3>Free to start</h3><p>No account. A free Google AI Studio key covers a few homes a day. Paid keys cost about 3 US cents per home.</p></div>
       <div class="card"><h3>Open source</h3><p>MIT licensed. Read the code, run your own copy, or build on it.</p></div>
-      <div class="card"><h3>Private</h3><p>Your plans, photos and keys stay in your browser. There is no Floorplay server.</p></div>
-      <div class="card"><h3>Your AI, your choice</h3><p>Anthropic, OpenAI, Gemini, OpenRouter, or a model running on your own computer.</p></div>
+      <div class="card"><h3>Private</h3><p>Your plans, photos and keys stay in your browser. There is no Floorimate server.</p></div>
+      <div class="card"><h3>Your AI, your choice</h3><p>Gemini, Claude, OpenAI, OpenRouter, or a model running on your own computer.</p></div>
     </div>
   </section>
 
   <section id="how">
     <h2>Three uploads, one button</h2>
-    <p class="lead">No drawing skills needed. Give Floorplay three things and press Process.</p>
+    <p class="lead">No drawing skills needed. Give Floorimate three things and press Process.</p>
     <div class="grid">
       <div class="card"><span class="num">1</span><h3>Your floor plan</h3><p>A developer brochure, a photo of a printed plan, or a screenshot from a listing.</p></div>
       <div class="card"><span class="num">2</span><h3>Photos and videos</h3><p>Optional. A walkthrough video or room photos, so the real floors show up: marble, tiles, parquet.</p></div>
@@ -97,19 +105,38 @@
     </div>
   </section>
 
+  <section id="share">
+    <div class="split">
+      <img src="render.jpg" alt="A lifelike render of the furnished sample condo, made from the 3D view" width="1178" height="896" loading="lazy" />
+      <div>
+        <span class="pill">Pro, free while in preview</span>
+        <h2>Show it to everyone</h2>
+        <p class="lead">Turn the 3D home into things you can send.</p>
+        <ul class="ticks">
+          <li><b>Lifelike renders.</b> Any 3D view becomes a photo-like image, with your real furniture.</li>
+          <li><b>Walkthrough video.</b> A fly-around and a room-by-room tour, ready for the family chat.</li>
+          <li><b>Plan for movers.</b> A PDF with every piece numbered and a list of what goes where.</li>
+          <li><b>CAD drawing.</b> A DXF in millimetres for your contractor or designer.</li>
+        </ul>
+        <p class="note" style="text-align:left">Free for now with a small "Made with Floorimate" mark. Pro removes it.</p>
+      </div>
+    </div>
+  </section>
+
   <section>
     <h2>Bring your own AI</h2>
-    <p class="lead">Paste an API key from any of these, or point Floorplay at a local model for fully offline use.</p>
+    <p class="lead">We tested 23 models on real plans. Google Gemini read plans best, and it has a free tier, so it is the default. Any of these work, or a local model for fully offline use.</p>
     <div class="providers">
-      <span class="chip">Anthropic Claude</span><span class="chip">OpenAI</span><span class="chip">Google Gemini</span><span class="chip">OpenRouter</span><span class="chip">Ollama</span><span class="chip">LM Studio</span><span class="chip">Any OpenAI-compatible server</span>
+      <span class="chip">Google Gemini (recommended)</span><span class="chip">Anthropic Claude</span><span class="chip">OpenAI</span><span class="chip">OpenRouter</span><span class="chip">Ollama</span><span class="chip">LM Studio</span><span class="chip">Any OpenAI-compatible server</span>
     </div>
   </section>
 
   <section id="faq">
     <h2>Questions</h2>
-    <details><summary>Is it really free?</summary><p>Yes. Floorplay itself costs nothing. Tracing a plan or identifying furniture uses your AI provider, which bills you directly at its usual rates. You can also draw plans by hand with no AI at all.</p></details>
+    <details><summary>Is it really free?</summary><p>Yes. Floorimate itself costs nothing, and a free Google AI Studio key covers a few homes a day. Beyond that your AI provider bills you directly, about 3 US cents per home and 4 to 7 cents per lifelike render. You can also draw plans by hand with no AI at all.</p></details>
+    <details><summary>What is Pro?</summary><p>Pro will remove the watermark from images, renders, videos and PDFs. It is coming soon. Until then every feature is free to use.</p></details>
     <details><summary>Where does my data go?</summary><p>Projects are saved in your browser. When you use AI, the image goes straight from your browser to the provider you chose, with your key. You can save a project file to keep a copy or move it to another computer.</p></details>
-    <details><summary>Can I use my ChatGPT or Claude subscription instead of an API key?</summary><p>Yes, inside the chat: add Floorplay as a connector in ChatGPT or Claude, share your floor plan, and the 3D home appears in the conversation. Setup is in the <a href="https://github.com/junglebabydev/floorplay#use-it-inside-chatgpt-or-claude">README</a>. The web app on its own needs an API key or a local model.</p></details>
+    <details><summary>Can I use my ChatGPT or Claude subscription instead of an API key?</summary><p>Yes, inside the chat: add Floorimate as a connector in ChatGPT or Claude, share your floor plan, and the 3D home appears in the conversation. Setup is in the <a href="https://github.com/junglebabydev/floorplay#use-it-inside-chatgpt-or-claude">README</a>. The web app on its own needs an API key or a local model.</p></details>
     <details><summary>How accurate is it?</summary><p>As accurate as the plan and your checks. AI tracing gets the layout close, then you confirm the scale against a wall you know and nudge anything that is off. Furniture sizes use published dimensions when the product is recognised, and estimates otherwise, which you can edit.</p></details>
     <details><summary>Can I install it?</summary><p>There is nothing to install. In Chrome or Edge you can add it to your desktop or home screen from the address bar if you like.</p></details>
   </section>
@@ -118,12 +145,12 @@
     <div class="band">
       <h2>Ready to plan your move?</h2>
       <p class="sub">Three uploads and one button. Your furnished home in 3D in a couple of minutes.</p>
-      <div class="ctas"><a class="btn primary" href="app/">Open Floorplay</a><a class="btn" href="app/?sample=1">Try the sample home</a></div>
+      <div class="ctas"><a class="btn primary" href="app/">Open Floorimate</a><a class="btn" href="app/?sample=1">Try the sample home</a></div>
     </div>
   </section>
 
   <footer>
-    <span>Floorplay · MIT licence</span>
+    <span>Floorimate · MIT licence</span>
     <span><a href="https://github.com/junglebabydev/floorplay">GitHub</a> · <a href="https://github.com/junglebabydev/floorplay/issues">Report a problem</a></span>
   </footer>
 </div>

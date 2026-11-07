@@ -43,7 +43,7 @@ export function SettingsDialog() {
           <button onClick={() => openSettings(false)} className="rounded p-1 hover:bg-black/5"><X size={18} /></button>
         </div>
         <div className="overflow-y-auto px-5 py-4">
-          <p className="mb-3 text-sm text-[#4a463f]">Floorplay uses your own AI account to read plans and photos. Pick a provider and paste an API key, or point it at a model running on your computer.</p>
+          <p className="mb-3 text-sm text-[#4a463f]">Floorimate uses your own AI account to read plans and photos. Pick a provider and paste an API key, or point it at a model running on your computer.</p>
           <div className="mb-4 grid gap-1.5 sm:grid-cols-2">
             {PROVIDER_IDS.map((p) => (
               <button key={p} onClick={() => { setOk(null); setDraft({ ...draft, active: p }) }} data-testid={`provider-${p}`}
@@ -69,21 +69,37 @@ export function SettingsDialog() {
               {info.keyUrl && <a href={info.keyUrl} target="_blank" rel="noreferrer" className="inline-flex flex-none items-center gap-1 rounded-lg border border-black/12 bg-white px-2.5 text-xs font-medium hover:bg-black/5">Get a key <ExternalLink size={12} /></a>}
             </div>
           </Field>
-          <Field label="Model" hint="Use a model that can read images. Test connection lists the ones your key can use.">
+          {id === 'gemini' && (
+            <Callout>Free to start: a Google AI Studio key comes with a free daily allowance, usually enough for a few homes a day. Limits vary by account. Add billing in AI Studio for more.</Callout>
+          )}
+          <Field label="Model for floor plans" hint="Use a model that can read images. Test connection lists the ones your key can use.">
             <input className={inputCls} value={cfg.model} onChange={(e) => setP({ model: e.target.value })} list={`models-${id}`} data-testid="model" />
             <datalist id={`models-${id}`}>{(models[id] ?? []).map((m) => <option key={m} value={m} />)}</datalist>
           </Field>
+          <details className="mb-3 rounded-xl border border-black/8 bg-white px-3 py-2 text-sm" open={Boolean(cfg.photoModel || cfg.imageModel)}>
+            <summary className="cursor-pointer font-medium">Cheaper model for photos{id === 'gemini' || id === 'openrouter' ? ', and renders' : ''}</summary>
+            <div className="mt-2">
+              <Field label="Model for furniture and room photos" hint="Optional. Photos are easier than plans, so a cheaper model works well. Empty uses the plan model.">
+                <input className={inputCls} value={cfg.photoModel ?? ''} onChange={(e) => setP({ photoModel: e.target.value })} list={`models-${id}`} placeholder={info.defaultPhotoModel ?? cfg.model} data-testid="photo-model" />
+              </Field>
+              {(id === 'gemini' || id === 'openrouter') && (
+                <Field label="Model for lifelike renders" hint="An image-generation model. About 4 to 7 US cents per render on your key.">
+                  <input className={inputCls} value={cfg.imageModel ?? ''} onChange={(e) => setP({ imageModel: e.target.value })} list={`models-${id}`} placeholder={info.defaultImageModel} data-testid="image-model" />
+                </Field>
+              )}
+            </div>
+          </details>
           <div className="mb-3 flex items-center gap-2">
             <Button onClick={test} disabled={testing || (info.needsKey && !cfg.apiKey.trim())}>{testing ? <Spinner label="Testing…" /> : 'Test connection'}</Button>
             {ok && <span className="flex items-center gap-1 text-sm text-[#24453c]"><CheckCircle2 size={15} /> {ok}</span>}
           </div>
 
           <Callout>
-            Your key is kept only in this browser and sent only to {id === 'custom' ? 'your server' : info.label.split(' (')[0]}. Floorplay has no server of its own. Usage is billed by your provider. On a shared computer, use Forget keys when you are done.
+            Your key is kept only in this browser and sent only to {id === 'custom' ? 'your server' : info.label.split(' (')[0]}. Floorimate has no server of its own. Usage is billed by your provider. On a shared computer, use Forget keys when you are done.
           </Callout>
           <details className="mt-3 text-sm text-[#4a463f]">
             <summary className="cursor-pointer font-medium">Why can't I sign in with ChatGPT or Claude?</summary>
-            <p className="mt-1.5 text-[13px] leading-snug">Anthropic does not allow Claude Pro or Max subscriptions to be used in other apps. OpenAI's Sign in with ChatGPT works only for apps in its partner programme. Both companies offer pay-as-you-go API keys, which work here. A Floorplay app that runs inside ChatGPT and Claude, using your subscription there, is planned.</p>
+            <p className="mt-1.5 text-[13px] leading-snug">Anthropic does not allow Claude Pro or Max subscriptions to be used in other apps. OpenAI's Sign in with ChatGPT works only for apps in its partner programme. Both companies offer pay-as-you-go API keys, which work here. You can also add Floorimate to ChatGPT or Claude as a connector and use it inside the chat with your subscription.</p>
           </details>
         </div>
         <div className="flex items-center justify-between gap-2 border-t border-black/8 px-5 py-3">
